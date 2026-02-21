@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ULTIMATE CTF v6 - OFFLINE MODE</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+:root{--g:#00ff41;--r:#ff4444;--gold:#ffd700}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:var(--g);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden}
+canvas{position:fixed;top:0;left:0;z-index:0;pointer-events:none}
+.pg{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:20px}
+h1{font-family:'Orbitron',sans-serif;font-size:clamp(1.4em,5vw,2.7em);text-shadow:0 0 30px var(--g);animation:fl 4s infinite}
+@keyframes fl{0%,100%{opacity:1}93%{opacity:.55}95%{opacity:1}98%{opacity:.65}99%{opacity:1}}
+.card{background:rgba(0,255,65,.04);border:1px solid rgba(0,255,65,.17);border-radius:12px;padding:22px;margin:13px 0}
+input[type=text],input[type=password]{width:100%;padding:13px 15px;margin:6px 0;background:rgba(0,0,0,.95);border:1.5px solid rgba(0,255,65,.28);border-radius:9px;color:var(--g);font-family:inherit;font-size:15px;outline:none;transition:.25s}
+input[type=text]:focus,input[type=password]:focus{border-color:var(--g);box-shadow:0 0 12px rgba(0,255,65,.22)}
+.btn{width:100%;padding:14px;margin-top:9px;background:var(--g);border:none;border-radius:9px;color:#000;font-family:'Orbitron',sans-serif;font-size:13px;font-weight:900;letter-spacing:2px;cursor:pointer;transition:.2s}
+.btn:hover{background:#00cc33;transform:translateY(-2px);box-shadow:0 5px 18px rgba(0,255,65,.3)}
+#res{min-height:76px;padding:18px;border:2px solid rgba(0,255,65,.1);border-radius:11px;text-align:center;font-size:16px;transition:.3s;color:#00ff41}
+.bw{height:9px;background:#0a0a0a;border-radius:5px;margin:11px 0;overflow:hidden}
+.bf{height:100%;width:0;background:linear-gradient(90deg,#f44,var(--gold),var(--g));border-radius:5px;transition:width 0.5s ease}
+.fc{display:inline-block;margin:2px;padding:2px 7px;background:rgba(255,68,68,.1);color:#f99;border:1px solid rgba(255,68,68,.22);border-radius:4px;font-size:11px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="pg">
+  <div style="text-align:center;padding:34px 0 16px">
+    <h1>⚡ ULTIMATE CTF v6.0</h1>
+    <p style="opacity:.3;font-size:12px;margin-top:7px">Standalone Client Mode (No Server Required)</p>
+  </div>
+
+  <div class="card">
+    <input id="nm" type="text" placeholder="👤 Hacker Alias" maxlength="30">
+    <input id="pw" type="password" placeholder="🔑 Password to Analyze">
+    <button class="btn" id="sb">🚀 ANALYZE LOCALLY</button>
+  </div>
+
+  <div class="card">
+    <div id="res">Ready for analysis...</div>
+    <div class="bw"><div class="bf" id="bf"></div></div>
+    <div id="fl" style="margin-top:5px;font-size:12px"></div>
+  </div>
+</div>
+
+<script>
+// --- MATRIX BACKGROUND ---
+var cv=document.getElementById('c'),cx=cv.getContext('2d');
+function rs(){cv.width=innerWidth;cv.height=innerHeight;}rs();window.onresize=rs;
+var CH='01アイウカキクケコサシスタチ',dr=Array(Math.floor(innerWidth/13)).fill(1);
+setInterval(function(){
+  cx.fillStyle='rgba(0,0,0,.05)';cx.fillRect(0,0,cv.width,cv.height);
+  cx.fillStyle='#00ff41';cx.font='13px monospace';
+  dr.forEach(function(y,i){
+    cx.fillText(CH[Math.floor(Math.random()*CH.length)],i*13,y*13);
+    if(y*13>cv.height&&Math.random()>.975)dr[i]=0;
+    dr[i]++;
+  });
+},50);
+
+// --- SCORING LOGIC (Previously on server, now here) ---
+function getScore(pw) {
+    let s = 0; const flags = [];
+    let l = pw.length;
+    s += l >= 12 ? 70 : l >= 8 ? 40 : l * 3;
+    if(/[a-z]/.test(pw)) s+=10;
+    if(/[A-Z]/.test(pw)) s+=20;
+    if(/\d/.test(pw)) s+=20;
+    if(/[!@#$%^&*]/.test(pw)) s+=40;
+    
+    let rank = '🪦 WEAK', color = '#555';
+    if(s >= 80) { rank='🦄 GODMODE'; color='#ff00ff'; }
+    else if(s >= 50) { rank='💎 DIAMOND'; color='#00cfff'; }
+    else if(s >= 30) { rank='⭐ GOLD'; color='#ffd700'; }
+
+    return { score: Math.min(100, s), rank, color };
+}
+
+document.getElementById('sb').onclick = function() {
+    const name = document.getElementById('nm').value;
+    const pass = document.getElementById('pw').value;
+    if(!name || !pass) return alert("Fill in alias and password!");
+
+    const result = getScore(pass);
+    const resDiv = document.getElementById('res');
+    
+    resDiv.style.color = result.color;
+    resDiv.innerHTML = `<h3>${result.rank}</h3><p>Score: ${result.score}%</p>`;
+    document.getElementById('bf').style.width = result.score + '%';
+};
+</script>
+</body>
+</html>
